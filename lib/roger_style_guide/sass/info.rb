@@ -76,6 +76,44 @@ module RogerStyleGuide::Sass
       values
     end
 
+    # Flatten variables into a flat key => value
+    # This tries to preserve the parent :category and :used
+    # Will add name.
+    def flatten_variables(variables, parent = nil)
+      output = []
+      variables.each do |k, v|
+        key = k
+        value = {}.update(v)
+
+        # Inherit parent category and used
+        if parent
+          key = parent[:name] + "[#{k}]"
+          value = {
+            category: parent[:category],
+            used: parent[:used]
+          }.update(value)
+        end
+
+        value = { name: key }.update(value)
+
+        case value[:value]
+        when Hash
+          output += flatten_variables(value[:value], value)
+        when Array
+          output += value[:value].map do |list_value|
+            {
+              name: key + "[]",
+              category: value[:category],
+              used: value[:used]
+            }.update(list_value)
+          end
+        else
+          output << value
+        end
+      end
+      output
+    end
+
     protected
 
     # Do the actual parsing of the sass file.
