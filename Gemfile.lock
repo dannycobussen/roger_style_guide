@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     roger_style_guide (0.0.0)
-      roger (~> 1.0)
+      roger (~> 1.0, >= 1.4.0)
       sass (~> 3.4.0)
 
 GEM
