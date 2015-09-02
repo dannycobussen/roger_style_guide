@@ -1,0 +1,66 @@
+$c-red: #f00;
+$c-green: rgb(0, 255, 0);
+$c-blue: darken(#00f, 0.5);
+
+$c-map: (
+  "level1": #f00,
+  "submap": (
+    "level2": #f00,
+    "level2-list": #f00 #f0f
+  ),
+  "string" : "stringy"
+);
+
+$c-list: #f00 #0f0;
+
+$m-number: 1px;
+
+$string: "stringy";
+
+$c-unused: #aaa;
+
+.red {
+  color: $c-red;
+}
+
+.green {
+  color: $c-green;
+}
+
+.blue {
+  color: $c-blue;
+}
+
+.map {
+  color: map-get($c-map, "level1");
+  background-color: map-get(map-get($c-map, "submap"), "level2");
+  border-color-top: nth(map-get(map-get($c-map, "submap"), "level2-list"), 1);
+  border-color-bottom: nth(map-get(map-get($c-map, "submap"), "level2-list"), 2);
+}
+
+.list {
+  border-color-top: nth($c-list, 1);
+  border-color-bottom: nth($c-list, 2);
+}
+
+.number-and-string {
+  padding-top: $m-number;
+  content: $string;
+}
+
+.non-variable-colors {
+  border-color-top: #F0F8FF;
+  border-color-bottom: aliceblue;
+  border-color-left: rgb(240, 248, 255);
+  border-color-right: rgba(240, 248, 255, 0.5);
+  color: hsl(0.58,1,0.97);
+  background-color: hsla(0.58,1,0.97,0.5);
+}
+
+
+// Should not appear
+.scoped-variables{
+  $scoped: #bbb
+}
+
+
