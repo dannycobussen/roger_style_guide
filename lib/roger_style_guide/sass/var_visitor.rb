@@ -37,7 +37,7 @@ module RogerStyleGuide::Sass
 
       value = env.var(node.name)
 
-      store_variable(node.name, value)
+      store_variable(node.name.to_s, value)
 
       r
     end
@@ -114,7 +114,7 @@ module RogerStyleGuide::Sass
     def get_map_values(map)
       values = {}
       map.value.each do |k, v|
-        values[k] = get_value(v)
+        values[k.to_s] = get_value(v)
       end
       values
     end
