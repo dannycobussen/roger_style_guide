@@ -19,6 +19,8 @@ module RogerStyleGuide::Sass
     #
     # @option options [Hash] :variable_category_matchers Category matchers. Modify these
     #   to match your variable category scheme
+    # @option optoins [String] :source Sass source, if passed will not load @path,
+    #   but only use it as reference.
     def initialize(path, environment = nil, options = {})
       @path = path
       @environment = environment || Sass::Environment.new
@@ -118,7 +120,11 @@ module RogerStyleGuide::Sass
 
     # Do the actual parsing of the sass file.
     def parse
-      scss = File.read(@path.to_s)
+      if @options[:source]
+        scss = @options[:source]
+      else
+        scss = File.read(@path.to_s)
+      end
       engine = Sass::Engine.new(scss, syntax: :scss)
       env = @environment
 
