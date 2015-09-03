@@ -5,7 +5,6 @@ module RogerStyleGuide::Helpers
   # -  `styleinfo.sass_info` : Sass info about variables, etc.
   # -  `styleinfo.toc` : Creates a toc data structure
   class StyleInfo
-
     def initialize(project)
       @project = project
     end

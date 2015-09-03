@@ -16,8 +16,8 @@ PP.pp info.variables(used: false)
 puts "COLORS"
 PP.pp info.variables(type: :color)
 
-# puts "MEASUREMENT"
-# PP.pp info.variables({category: :measurement, used: false})
+puts "MEASUREMENT"
+PP.pp info.variables(category: :measurement)
 
 # puts "ALL"
 # PP.pp info.variables()
