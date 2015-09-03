@@ -120,17 +120,17 @@ module RogerStyleGuide::Sass
 
     # Do the actual parsing of the sass file.
     def parse
-      if @options[:source]
-        scss = @options[:source]
-      else
-        scss = File.read(@path.to_s)
-      end
-      engine = Sass::Engine.new(scss, syntax: :scss)
+      engine = Sass::Engine.new(sass_source, syntax: :scss)
       env = @environment
 
       tree = engine.to_tree
+
+      # VarVisitor is a subclass of the perform visitor so
+      # this does most of the SASS heavy lifting
       var_visitor = VarVisitor.new(env)
       tree = var_visitor.send(:visit, tree)
+
+      # Store the variables
       @variables = categorize_variables(var_visitor.variables)
 
       Sass::Tree::Visitors::CheckNesting.visit(tree) # Check again to validate mixins
@@ -139,10 +139,20 @@ module RogerStyleGuide::Sass
 
       color_visitor = ColorVisitor.new
       color_visitor.send(:visit, tree)
+
+      # Store the colors
       @colors = color_visitor.colors
 
       @_parsed = true
       nil
+    end
+
+    def sass_source
+      if @options[:source]
+        @options[:source]
+      else
+        File.read(@path.to_s)
+      end
     end
 
     # Looks at options[:variable_category_matchers] and categorizes the variables
