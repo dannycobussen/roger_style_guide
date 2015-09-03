@@ -76,6 +76,7 @@ module RogerStyleGuide::Sass
       @variables
     end
 
+    # rubocop:disable Metrics/MethodLength
     def get_value(value)
       case value
       when Sass::Script::Value::Map
@@ -104,6 +105,7 @@ module RogerStyleGuide::Sass
         }
       end
     end
+    # rubocop:enable Metrics/MethodLength
 
     def get_list_values(list)
       list.value.map do |value|
