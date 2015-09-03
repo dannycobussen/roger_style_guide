@@ -93,32 +93,19 @@ module RogerStyleGuide::Sass
     #
     def flatten_variables(variables, parent = nil)
       output = []
-      variables.each do |k, v|
-        key = k
-        value = {}.update(v)
+      variables.each do |key, value|
+        value = value.dup
+        value[:name] = key
 
-        # Inherit parent category and used
-        if parent
-          key = parent[:name] + "[#{k}]"
-          value = {
-            category: parent[:category],
-            used: parent[:used]
-          }.update(value)
-        end
-
-        value = { name: key }.update(value)
+        # Inherit parent :category and :used values
+        # Set key with parent[:name]
+        value = inherit_parent_values(value, parent) if parent
 
         case value[:value]
         when Hash
           output += flatten_variables(value[:value], value)
         when Array
-          output += value[:value].map do |list_value|
-            {
-              name: key + "[]",
-              category: value[:category],
-              used: value[:used]
-            }.update(list_value)
-          end
+          output += flatten_variable_list(value[:value], value)
         else
           output << value
         end
@@ -127,6 +114,24 @@ module RogerStyleGuide::Sass
     end
 
     protected
+
+    def inherit_parent_values(value, parent)
+      value.update(
+        name: parent[:name] + "[#{value[:name]}]",
+        category: parent[:category],
+        used: parent[:used]
+      )
+    end
+
+    def flatten_variable_list(list, parent)
+      list.map do |list_value|
+        {
+          name: parent[:name] + "[]",
+          category: parent[:category],
+          used: parent[:used]
+        }.update(list_value)
+      end
+    end
 
     # Do the actual parsing of the sass file.
     def parse
