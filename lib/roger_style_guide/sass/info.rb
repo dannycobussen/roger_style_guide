@@ -184,55 +184,54 @@ module RogerStyleGuide::Sass
       filtered_variables = {}
 
       variables.each do |key, value|
+        # First apply the filter to the value itself
+        next unless apply_filter(value, filter)
+
+        # Handle Hash and Array
         case value[:value]
         when Hash
-          # First apply the filter to the map itself
-          if apply_filter(value, filter)
-            result = filter_variables(value[:value], filter)
-            if result.length > 0
-              filtered_variables[key] = value.dup
-              filtered_variables[key][:value] = result
-            end
-          end
+          result = filter_variables(value[:value], filter)
+
+          # We don't want this value to appear in our output at all if no children match
+          next unless result.length > 0
         when Array
-          # First apply the filter to the list itself
-          if apply_filter(value, filter)
-            result = value[:value].select { |list_value| apply_filter(list_value, filter) }
-            if result.length > 0
-              filtered_variables[key] = value.dup
-              filtered_variables[key][:value] = result
-            end
-          end
+          result = value[:value].select { |list_value| apply_filter(list_value, filter) }
+
+          # We don't want this value to appear in our output at all if no children match
+          next unless result.length > 0
         else
-          filtered_variables[key] = value.dup if apply_filter(value, filter)
+          result = value[:value]
         end
+
+        # Assign new value
+        filtered_variables[key] = value.dup
+        filtered_variables[key][:value] = result
       end
 
       filtered_variables
     end
 
-    # This is a very clunky way to filter. Works for now tho.
-    # TODO: Needs refactoring
+    # Apply filter on type, cateogry and used count
     def apply_filter(value, filter)
-      result = true
+      apply_filter_type(value, filter) &&
+        apply_filter_category(value, filter) &&
+        apply_filter_used(value, filter)
+    end
 
-      # Check for :type
-      if filter_applicable?(:type, value, filter)
-        result &&= value[:type] == filter[:type]
-      end
+    def apply_filter_type(value, filter)
+      return true unless filter_applicable?(:type, value, filter)
+      value[:type] == filter[:type]
+    end
 
-      # Check for :category
-      if filter_applicable?(:category, value, filter)
-        result &&= value[:category] == filter[:category]
-      end
+    def apply_filter_category(value, filter)
+      return true unless filter_applicable?(:category, value, filter)
+      value[:category] == filter[:category]
+    end
 
-      # Check for :used
-      if filter_applicable?(:used, value, filter)
-        result &&= filter[:used] == true && value[:used] > 0 ||
-                   filter[:used] == false && value[:used] == 0
-      end
-
-      result
+    def apply_filter_used(value, filter)
+      return true unless filter_applicable?(:used, value, filter)
+      filter[:used] == true && value[:used] > 0 ||
+        filter[:used] == false && value[:used] == 0
     end
 
     # Should we apply the filter with key key?
