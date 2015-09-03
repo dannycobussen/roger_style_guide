@@ -63,6 +63,10 @@ module RogerStyleGuide::Sass
     end
 
     # Flattens variables into just an array of values
+    # This will split out maps and lists into singular values.
+    #
+    # @param [Hash] variables a Variable structure
+    # @return [Array] An array of variables values.
     def flatten_variable_values(variables)
       values = []
       variables.each do |_, v|
@@ -79,8 +83,14 @@ module RogerStyleGuide::Sass
     end
 
     # Flatten variables into a flat key => value
-    # This tries to preserve the parent :category and :used
-    # Will add name.
+    # This flattening preserves the parent :category and :used
+    # in lists and maps as these cannot be set on child elements
+    # of list and maps.
+    #
+    # It will add a `:name` key to the output.
+    # Maps: will get names like "varname[key][subkey]"
+    # Lists: will get names like "varname[]"
+    #
     def flatten_variables(variables, parent = nil)
       output = []
       variables.each do |k, v|
