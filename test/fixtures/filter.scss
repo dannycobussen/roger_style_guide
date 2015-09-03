@@ -1,0 +1,39 @@
+$c-1: #fff;
+$c-list: #fff, 1px;
+$c-map: (
+  key: #fff,
+  list: #fff #fff,
+  noncolor: 1px,
+  map: (
+    subkey: #fff
+  )
+);
+
+$f-1: arial;
+$f-list: arial, helvetica;
+$f-map: (
+  key: arial,
+  list : arial helvetica,
+  map : (
+    subkey: arial
+  )
+);
+
+$m-1: 10px;
+
+$unused-1: unused;
+$unused-list: unused, unused;
+$unused-map: (
+  unused: unused
+);
+
+.use{
+  color: $c-1;
+  background: map-get($c-map, "key");
+  font: $f-1;
+  padding: $m-1;
+
+  content: nth($c-list, 1);
+  content: nth($f-list, 1);
+  content: map-get($f-map, "key");
+}
