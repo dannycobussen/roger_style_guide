@@ -3,7 +3,7 @@ require File.dirname(__FILE__) + "/../../../lib/roger_style_guide/sass/info"
 
 module RogerStyleGuide::Test::Sass
   # Test parsing of variables
-  class InfoParseTest < ::Test::Unit::TestCase
+  class InfoParseVariablesTest < ::Test::Unit::TestCase
     def test_multiple_variables
       variables = parse_variables("$var1: a; $var2: b")
       assert_equal 2, variables.length
