@@ -14,12 +14,14 @@ module RogerStyleGuide::Sass
   #       }
   #     }
   class VarVisitor < Sass::Tree::Visitors::Perform
-    attr_reader :variables
-    public :visit
+    public :visit, :with_environment
+
+    attr_reader :variables, :mixins, :root_env
 
     def initialize(environment)
       super(environment)
       @variables = {}
+      @mixins = {}
     end
 
     def visit_prop(node)
@@ -43,6 +45,19 @@ module RogerStyleGuide::Sass
       r
     end
 
+    def visit_mixindef(node)
+      r = super
+
+      store_mixin(node)
+
+      r
+    end
+
+    def visit_mixin(node)
+      mark_as_used(@mixins, node.name)
+      super(node)
+    end
+
     protected
 
     def top_level_env?(env)
@@ -53,21 +68,34 @@ module RogerStyleGuide::Sass
       values.each do |child|
         case child
         when Sass::Script::Tree::Variable
-          mark_variable_as_used(child)
+          mark_as_used(@variables, child.name)
         else
           find_variable_use_recursive(child.children)
         end
       end
     end
 
-    def mark_variable_as_used(var)
-      @variables[var.name] ||= {}
+    def mark_as_used(hash, name)
+      hash[name] ||= {}
 
-      if @variables[var.name].key?(:used)
-        @variables[var.name][:used] += 1
+      if hash[name].key?(:used)
+        hash[name][:used] += 1
       else
-        @variables[var.name][:used] = 1
+        hash[name][:used] = 1
       end
+    end
+
+    def store_mixin(node)
+      key = node.name
+      @mixins[key] ||= {}
+      @mixins[key][:used] = 0 unless @mixins[key].key?(:used)
+
+      if node.args.any? || node.splat || node.has_content
+        @mixins[key][:has_params] = true
+      else
+        @mixins[key][:has_params] = false
+      end
+      @mixins
     end
 
     def store_variable(key, value)

@@ -23,4 +23,10 @@ PP.pp info.variables(category: :measurement)
 # PP.pp info.variables()
 
 puts "------"
-PP.pp info.flatten_variable_values info.variables(type: :color)
+PP.pp info.flatten_variables info.variables(type: :color)
+
+puts "MIXINS"
+
+PP.pp info.mixins
+puts "-" * 20
+puts info.mixins_css("mokks")

@@ -32,6 +32,9 @@ module RogerStyleGuide::Sass
           /^c-/ => :color,
           /^m-/ => :measurement,
           /^b-/ => :breakpoint
+        },
+        mixin_category_matchers: {
+          /^t-/ => :typography
         }
       }
 
@@ -60,6 +63,21 @@ module RogerStyleGuide::Sass
     def variables(filter = {})
       parse unless @_parsed
       filter_variables(@variables, filter)
+    end
+
+    # A list of globally defined mixins
+    #
+    # @return [Hash] A hash with mixins in the followin format
+    #     {
+    #       "MIXIN_NAME" => { # Name of the mixin
+    #         category: symbol/nil, # A symbol representing mixin category
+    #         has_params: true/false, # Wether or not it has arguments/splat/contents
+    #         used: 0 # How many times it's used
+    #       }
+    #     }
+    def mixins
+      parse unless @_parsed
+      @mixins
     end
 
     # Flattens variables into just an array of values
@@ -142,24 +160,36 @@ module RogerStyleGuide::Sass
 
       # VarVisitor is a subclass of the perform visitor so
       # this does most of the SASS heavy lifting
-      var_visitor = VarVisitor.new(env)
-
-      # Store the variables
-      @variables = categorize_variables(var_visitor.variables)
-      tree = var_visitor.visit(tree)
+      @var_visitor = VarVisitor.new(env)
+      tree = @var_visitor.visit(tree)
 
       Sass::Tree::Visitors::CheckNesting.visit(tree) # Check again to validate mixins
       tree, extends = Sass::Tree::Visitors::Cssize.visit(tree)
       Sass::Tree::Visitors::Extend.visit(tree, extends)
 
-      color_visitor = ColorVisitor.new
-      color_visitor.visit(tree)
+      @color_visitor = ColorVisitor.new
+      @color_visitor.visit(tree)
 
-      # Store the colors
-      @colors = color_visitor.colors
+      store_parsed_data
 
       @_parsed = true
       nil
+    end
+
+    def store_parsed_data
+      # Store the variables
+      @variables = categorize(
+        @var_visitor.variables,
+        @options[:variable_category_matchers]
+      )
+
+      @mixins = categorize(
+        @var_visitor.mixins,
+        @options[:variable_category_matchers]
+      )
+
+      # Store the colors
+      @colors = @color_visitor.colors
     end
 
     def sass_source
