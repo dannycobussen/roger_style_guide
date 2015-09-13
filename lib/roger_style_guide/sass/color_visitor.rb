@@ -4,6 +4,8 @@ module RogerStyleGuide::Sass
   #
   # The color array can be found through the #color method
   class ColorVisitor < Sass::Tree::Visitors::Base
+    public :visit
+
     def initialize
       @colors = []
     end

@@ -143,17 +143,17 @@ module RogerStyleGuide::Sass
       # VarVisitor is a subclass of the perform visitor so
       # this does most of the SASS heavy lifting
       var_visitor = VarVisitor.new(env)
-      tree = var_visitor.send(:visit, tree)
 
       # Store the variables
       @variables = categorize_variables(var_visitor.variables)
+      tree = var_visitor.visit(tree)
 
       Sass::Tree::Visitors::CheckNesting.visit(tree) # Check again to validate mixins
       tree, extends = Sass::Tree::Visitors::Cssize.visit(tree)
       Sass::Tree::Visitors::Extend.visit(tree, extends)
 
       color_visitor = ColorVisitor.new
-      color_visitor.send(:visit, tree)
+      color_visitor.visit(tree)
 
       # Store the colors
       @colors = color_visitor.colors

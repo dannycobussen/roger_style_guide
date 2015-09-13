@@ -15,6 +15,7 @@ module RogerStyleGuide::Sass
   #     }
   class VarVisitor < Sass::Tree::Visitors::Perform
     attr_reader :variables
+    public :visit
 
     def initialize(environment)
       super(environment)
