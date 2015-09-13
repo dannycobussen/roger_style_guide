@@ -22,6 +22,19 @@ module RogerStyleGuide::Sass
       super(environment)
       @variables = {}
       @mixins = {}
+      @root_env = nil
+    end
+
+    # Hack to expose the root environment
+    def visit_children(parent)
+      new_env = Sass::Environment.new(@environment, parent.options)
+
+      @root_env = new_env if parent.is_a? Sass::Tree::RootNode
+
+      with_environment new_env do
+        parent.children = parent.children.map { |c| visit(c) }.flatten
+        parent
+      end
     end
 
     def visit_prop(node)
@@ -61,7 +74,7 @@ module RogerStyleGuide::Sass
     protected
 
     def top_level_env?(env)
-      !(env.parent.respond_to?(:parent) && env.parent.parent.respond_to?(:parent))
+      env == @root_env
     end
 
     def find_variable_use_recursive(values)

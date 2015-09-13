@@ -80,6 +80,17 @@ module RogerStyleGuide::Sass
       @mixins
     end
 
+    # Generates CSS so all mixins that do not have params (i.e. no arguments/splat/contents)
+    # can be used in a styleguide. It will generate a css class for each mixin starting with
+    # `prefix`
+    #
+    # @param [String] prefix Prefix to use for generated class names
+    # @return [String] A CSS string
+    def mixins_css(prefix = "mixin")
+      parse unless @_parsed
+      generate_mixin_css(prefix)
+    end
+
     # Flattens variables into just an array of values
     # This will split out maps and lists into singular values.
     #
@@ -192,6 +203,30 @@ module RogerStyleGuide::Sass
       @colors = @color_visitor.colors
     end
 
+    # Generates a CSS so you can use the mixins in a styleguide
+    def generate_mixin_css(prefix)
+      out = @mixins.map do |k, v|
+        next if v[:has_params]
+        ".#{prefix}-#{k} { @include #{k}; }"
+      end
+
+      scss = out.compact.join "\n"
+
+      tree = Sass::Engine.new(scss, syntax: :scss).to_tree
+
+      Sass::Tree::Visitors::CheckNesting.visit(tree)
+
+      tree = @var_visitor.with_environment(@var_visitor.root_env) do
+        @var_visitor.visit(tree)
+      end
+
+      Sass::Tree::Visitors::CheckNesting.visit(tree) # Check again to validate mixins
+      tree, extends = Sass::Tree::Visitors::Cssize.visit(tree)
+      Sass::Tree::Visitors::Extend.visit(tree, extends)
+
+      tree.css
+    end
+
     def sass_source
       if @options[:source]
         @options[:source]
@@ -200,22 +235,20 @@ module RogerStyleGuide::Sass
       end
     end
 
-    # Looks at options[:variable_category_matchers] and categorizes the variables
-    # Only does this for top level variables, not nested maps etc.
-    def categorize_variables(variables)
-      categorized_variables = variables.dup
-      matchers = @options[:variable_category_matchers]
-      categorized_variables.each do |key, _|
+    # Looks at `matchers` and categorizes the `data`
+    def categorize(data, matchers)
+      categorized_data = data.dup
+      categorized_data.each do |key, _|
         found = matchers.find do |match, _|
           key.to_s.match(match)
         end
         if found
-          categorized_variables[key][:category] = found[1]
+          categorized_data[key][:category] = found[1]
         else
-          categorized_variables[key][:category] = nil
+          categorized_data[key][:category] = nil
         end
       end
-      categorized_variables
+      categorized_data
     end
 
     # Deep filter list of variable. This means that
