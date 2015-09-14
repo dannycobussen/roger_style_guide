@@ -8,7 +8,11 @@ end
 
 require File.dirname(__FILE__) + "/../../lib/roger_style_guide/sass/info"
 
-info = RogerStyleGuide::Sass::Info.new(File.dirname(__FILE__) + "/../fixtures/test.scss")
+info = RogerStyleGuide::Sass::Info.new(
+  File.dirname(__FILE__) + "/../fixtures/test.scss",
+  nil,
+  document_root_path: File.dirname(__FILE__) + "/../"
+)
 
 puts "UNUSED"
 PP.pp info.variables(used: false)
@@ -30,3 +34,4 @@ puts "MIXINS"
 PP.pp info.mixins
 puts "-" * 20
 puts info.mixins_css("mokks")
+PP.pp info.fonts

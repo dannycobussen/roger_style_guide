@@ -7,6 +7,7 @@ module RogerStyleGuide::Sass
   #
   # -  `styleinfo.colors` : A list of all used colors in the output CSS
   # -  `styleinfo.variables` : A list of variables filterable
+  # -  `styleinfo.fonts` : A list of fonts
   class Info
     attr_reader :path, :environment
 
@@ -69,6 +70,22 @@ module RogerStyleGuide::Sass
     def variables(filter = {})
       parse unless @_parsed
       filter_variables(@variables, filter)
+    end
+
+    # A list of @font-face declarations
+    #
+    # @return [Hash] A hash with fonts in the followin format
+    #     {
+    #       "fontname-fontweight" => { # Name of font + weight
+    #         font_name: string, # The font name
+    #         font_weight: string, # The font weight
+    #         css: string # CSS you can use in the styleguide. It will try to absolutize
+    #                       the src paths.
+    #       }
+    #     }
+    def fonts
+      parse unless @_parsed
+      @fonts
     end
 
     # A list of globally defined mixins
@@ -204,6 +221,8 @@ module RogerStyleGuide::Sass
         @var_visitor.mixins,
         @options[:variable_category_matchers]
       )
+
+      @fonts = @var_visitor.fonts
 
       # Store the colors
       @colors = @color_visitor.colors

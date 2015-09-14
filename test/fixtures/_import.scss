@@ -1,0 +1,12 @@
+@font-face {
+  font-family: 'AleoLight';
+  src: url('./fonts/Aleo-Light-webfont.ttf') format('truetype');
+  src: url('./fonts/Aleo-Light-webfont.eot?#iefix') format('embedded-opentype'),
+       url('./fonts/Aleo-Light-webfont.svg') format('svg'),
+       url('./fonts/Aleo-Light-webfont.woff') format('woff');
+
+  src: url('');
+  font-style: normal;
+  font-weight: $font-weight;
+  text-rendering: optimizeLegibility;
+}
