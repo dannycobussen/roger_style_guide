@@ -19,6 +19,8 @@ module RogerStyleGuide::Sass
     #
     # @option options [Hash] :variable_category_matchers Category matchers. Modify these
     #   to match your variable category scheme
+    # @option options [String, Pathname] :document_root_path The root_path of the webserver
+    #   This path will be used to rewrite URL's if needed.
     # @option optoins [String] :source Sass source, if passed will not load @path,
     #   but only use it as reference.
     def initialize(path, environment = nil, options = {})
@@ -35,10 +37,14 @@ module RogerStyleGuide::Sass
         },
         mixin_category_matchers: {
           /^t-/ => :typography
-        }
+        },
+        document_root_path: nil
       }
 
       @options = defaults.update(options)
+
+      root = @options[:document_root_path]
+      @options[:document_root_path] = Pathname.new(root).realpath if root
     end
 
     # An array of all used colors in properties in the sass file.
@@ -164,7 +170,7 @@ module RogerStyleGuide::Sass
 
     # Do the actual parsing of the sass file.
     def parse
-      engine = Sass::Engine.new(sass_source, syntax: :scss)
+      engine = sass_engine
       env = @environment
 
       tree = engine.to_tree
@@ -227,11 +233,18 @@ module RogerStyleGuide::Sass
       tree.css
     end
 
-    def sass_source
+    def sass_engine
       if @options[:source]
-        @options[:source]
+        Sass::Engine.new(
+          @options[:source],
+          syntax: :scss,
+          document_root_path: @options[:document_root_path]
+        )
       else
-        File.read(@path.to_s)
+        Sass::Engine.for_file(
+          @path.to_s,
+          document_root_path: @options[:document_root_path]
+        )
       end
     end
 
