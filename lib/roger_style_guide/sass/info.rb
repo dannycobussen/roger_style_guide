@@ -69,7 +69,7 @@ module RogerStyleGuide::Sass
     #     }
     def variables(filter = {})
       parse unless @_parsed
-      filter_variables(@variables, filter)
+      filter(@variables, filter)
     end
 
     # A list of @font-face declarations
@@ -98,9 +98,9 @@ module RogerStyleGuide::Sass
     #         used: 0 # How many times it's used
     #       }
     #     }
-    def mixins
+    def mixins(filter = {})
       parse unless @_parsed
-      @mixins
+      filter(@mixins, filter)
     end
 
     # Generates CSS so all mixins that do not have params (i.e. no arguments/splat/contents)
@@ -287,20 +287,20 @@ module RogerStyleGuide::Sass
     # it will look into maps/list and only return the elements that
     # match
     #
-    # @param [Hash] variables Variables to filter
+    # @param [Hash] hash Variables to filter
     # @param [Hash] filter Stuff to filter on: {type: X, category: X, used: true/false}
     #
-    def filter_variables(variables, filter)
-      filtered_variables = {}
+    def filter(hash, filter)
+      filtered_hash = {}
 
-      variables.each do |key, value|
+      hash.each do |key, value|
         # First apply the filter to the value itself
         next unless apply_filter(value, filter)
 
         # Handle Hash and Array
         case value[:value]
         when Hash
-          result = filter_variables(value[:value], filter)
+          result = filter(value[:value], filter)
 
           # We don't want this value to appear in our output at all if no children match
           next unless result.length > 0
@@ -314,11 +314,11 @@ module RogerStyleGuide::Sass
         end
 
         # Assign new value
-        filtered_variables[key] = value.dup
-        filtered_variables[key][:value] = result
+        filtered_hash[key] = value.dup
+        filtered_hash[key][:value] = result
       end
 
-      filtered_variables
+      filtered_hash
     end
 
     # Apply filter on type, cateogry and used count
