@@ -37,6 +37,15 @@ module RogerStyleGuide::Test::Sass
       assert_equal 0, mixins["unused"][:used]
     end
 
+    def test_mixin_css
+      mixins = parse_mixins("@mixin test { font-weight: bold; }")
+      mixin = mixins["test"]
+
+      assert mixin[:css].is_a? String
+      assert mixin[:css].include?(".mixin-test")
+      assert mixin[:css].include?("font-weight: bold;")
+    end
+
     def parse_mixins(source)
       info = ::RogerStyleGuide::Sass::Info.new("", nil, source: source)
       info.mixins

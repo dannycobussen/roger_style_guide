@@ -210,9 +210,12 @@ module RogerStyleGuide::Sass
 
       if node.args.any? || node.splat || node.has_content
         @mixins[key][:has_params] = true
+        @mixins[key][:css] = nil
       else
         @mixins[key][:has_params] = false
+        @mixins[key][:css] = get_mixin_css(node)
       end
+
       @mixins
     end
 
@@ -221,6 +224,26 @@ module RogerStyleGuide::Sass
       @variables[key][:used] = 0 unless @variables[key].key?(:used)
       @variables[key].update(get_value(value))
       @variables
+    end
+
+    def get_mixin_css(node)
+      prefix = @environment.options[:mixin_class_prefix]
+
+      # Generate a fictious rule
+      rule = Sass::Tree::RuleNode.new([".#{prefix}-#{node.name}"])
+      rule.children << Sass::Tree::MixinNode.new(
+        node.name, [], Sass::Util::NormalizedMap.new({}), nil, nil
+      )
+      rule.options = node.options
+
+      # Visit rule so we can actually generate css afterwards
+      visit_rule(rule)
+
+      # visit_rule will trigger a "use" as well
+      # so we compensate for that
+      @mixins[node.name][:used] -= 1
+
+      rule.css
     end
 
     # rubocop:disable Metrics/MethodLength

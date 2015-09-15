@@ -22,6 +22,8 @@ module RogerStyleGuide::Sass
     #   to match your variable category scheme
     # @option options [String, Pathname] :document_root_path The root_path of the webserver
     #   This path will be used to rewrite URL's if needed.
+    # @option options [String] :mixin_class_prefix The prefix to use when generating mixin classes
+    #   This path will be used to rewrite URL's if needed.
     # @option optoins [String] :source Sass source, if passed will not load @path,
     #   but only use it as reference.
     def initialize(path, environment = nil, options = {})
@@ -39,6 +41,7 @@ module RogerStyleGuide::Sass
         mixin_category_matchers: {
           /^t-/ => :typography
         },
+        mixin_class_prefix: "mixin",
         document_root_path: nil
       }
 
@@ -96,22 +99,14 @@ module RogerStyleGuide::Sass
     #         category: symbol/nil, # A symbol representing mixin category
     #         has_params: true/false, # Wether or not it has arguments/splat/contents
     #         used: 0 # How many times it's used
+    #         css: CSS # A generated css class that has the format "mixin_class_prefix-mixinname"
+    #                    Uses @options[:mixin_class_prefix]. This will only work on mixins
+    #                    that do not have params.
     #       }
     #     }
     def mixins(filter = {})
       parse unless @_parsed
       filter(@mixins, filter)
-    end
-
-    # Generates CSS so all mixins that do not have params (i.e. no arguments/splat/contents)
-    # can be used in a styleguide. It will generate a css class for each mixin starting with
-    # `prefix`
-    #
-    # @param [String] prefix Prefix to use for generated class names
-    # @return [String] A CSS string
-    def mixins_css(prefix = "mixin")
-      parse unless @_parsed
-      generate_mixin_css(prefix)
     end
 
     # Flattens variables into just an array of values
@@ -228,41 +223,19 @@ module RogerStyleGuide::Sass
       @colors = @color_visitor.colors
     end
 
-    # Generates a CSS so you can use the mixins in a styleguide
-    def generate_mixin_css(prefix)
-      out = @mixins.map do |k, v|
-        next if v[:has_params]
-        ".#{prefix}-#{k} { @include #{k}; }"
-      end
-
-      scss = out.compact.join "\n"
-
-      tree = Sass::Engine.new(scss, syntax: :scss).to_tree
-
-      Sass::Tree::Visitors::CheckNesting.visit(tree)
-
-      tree = @var_visitor.with_environment(@var_visitor.root_env) do
-        @var_visitor.visit(tree)
-      end
-
-      Sass::Tree::Visitors::CheckNesting.visit(tree) # Check again to validate mixins
-      tree, extends = Sass::Tree::Visitors::Cssize.visit(tree)
-      Sass::Tree::Visitors::Extend.visit(tree, extends)
-
-      tree.css
-    end
-
     def sass_engine
       if @options[:source]
         Sass::Engine.new(
           @options[:source],
           syntax: :scss,
-          document_root_path: @options[:document_root_path]
+          document_root_path: @options[:document_root_path],
+          mixin_class_prefix: @options[:mixin_class_prefix]
         )
       else
         Sass::Engine.for_file(
           @path.to_s,
-          document_root_path: @options[:document_root_path]
+          document_root_path: @options[:document_root_path],
+          mixin_class_prefix: @options[:mixin_class_prefix]
         )
       end
     end
