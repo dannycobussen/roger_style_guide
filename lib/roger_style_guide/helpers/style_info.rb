@@ -10,10 +10,13 @@ module RogerStyleGuide::Helpers
     end
 
     # Get sass_info from a sass file
-    def sass_info(path)
+    def sass_info(path, options = {})
       prepare_sass_load_paths!
+
+      options = {document_root_path: @project.html_path}.update(options)
+
       @_sass_info ||= {}
-      @_sass_info[path] ||= RogerStyleGuide::Sass::Info.new(@project.html_path + path)
+      @_sass_info[path] ||= RogerStyleGuide::Sass::Info.new(@project.html_path + path, nil, options)
     end
 
     protected
