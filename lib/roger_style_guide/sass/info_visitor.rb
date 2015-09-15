@@ -20,10 +20,6 @@ module RogerStyleGuide::Sass
       @fonts = {}
 
       @root_env = nil
-
-      # Internal variable cache
-      @_document_root_path = @environment.options[:document_root_path]
-      @_document_root_path_regexp = Regexp.new("^" + Regexp.escape(@_document_root_path.to_s))
     end
 
     # Hack to expose the root environment
@@ -73,96 +69,14 @@ module RogerStyleGuide::Sass
     end
 
     def visit_directive(node)
-      r = super(node)
+      r = super
 
-      if node.name == "@font-face"
-        fnode, data = extract_at_font_face(node)
-
-        # We must revisit the extracted node
-        # Otherwise the CSS won't work
-        super(fnode)
-
-        data[:css] = fnode.css
-
-        puts data.inspect
-
-        store_font(data)
-      end
+      store_font(node) if node.name == "@font-face"
 
       r
     end
 
     protected
-
-    def extract_at_font_face(node)
-      fnode = node.deep_copy
-
-      data = {
-        font_family: "",
-        font_weight: "regular"
-      }
-
-      fnode.children = fnode.children.map do |n|
-        if n.is_a?(Sass::Tree::PropNode)
-          case n.resolved_name
-          when "src"
-            n.value = rewrite_font_src_node(n.value)
-          when "font-family"
-            data[:font_family] = n.resolved_value
-          when "font-weight"
-            data[:font_weight] = n.resolved_value
-          end
-        end
-        n
-      end
-
-      [fnode, data]
-    end
-
-    def rewrite_font_src_node(value)
-      case value
-      when Sass::Script::Tree::Funcall
-        if value.name == "url"
-          value = Sass::Script::Tree::Funcall.new(
-            value.name,
-            [
-              Sass::Script::Tree::Literal.new(
-                Sass::Script::Value::String.new(rewrite_path(value.args.first.value.value), :string)
-              )
-            ],
-            value.keywords,
-            value.splat,
-            value.kwarg_splat
-          )
-        end
-      when Sass::Script::Tree::ListLiteral
-        value.elements.map! { |v| rewrite_font_src_node(v) }
-      end
-      value
-    end
-
-    def rewrite_path(path)
-      # No root path defined, we can't resolve
-      return path unless @_document_root_path
-
-      # Already absolute path
-      return path if path =~ %r{\A/}
-
-      # Split to real file names
-      file, char, rest = path.split(/([?#])/, 2)
-
-      # Apparently there is no path
-      return path if file.nil?
-
-      file_base = Pathname.new(@environment.options[:original_filename]).realpath.dirname
-      real_path = file_base + file
-
-      # The file_path is not in the document_root_path
-      return path unless real_path.to_s.start_with?(@_document_root_path.to_s)
-
-      # Remove the root path from the path
-      real_path.to_s.sub(@_document_root_path_regexp, "") + char + rest
-    end
 
     def top_level_env?(env)
       env == @root_env
@@ -189,7 +103,23 @@ module RogerStyleGuide::Sass
       end
     end
 
-    def store_font(data)
+    def store_font(node)
+      data = {
+        font_family: "",
+        font_weight: "regular",
+        _node: node.deep_copy
+      }
+
+      node.children.each do |n|
+        next unless n.is_a?(Sass::Tree::PropNode)
+        case n.resolved_name
+        when "font-family"
+          data[:font_family] = n.resolved_value
+        when "font-weight"
+          data[:font_weight] = n.resolved_value
+        end
+      end
+
       key = [data[:font_family], data[:font_weight]].join("-")
       @fonts[key] ||= {}
       @fonts[key].update(data)
@@ -200,13 +130,12 @@ module RogerStyleGuide::Sass
       key = node.name
       @mixins[key] ||= {}
       @mixins[key][:used] = 0 unless @mixins[key].key?(:used)
+      @mixins[key][:css] = nil
 
       if node.args.any? || node.splat || node.has_content
         @mixins[key][:has_params] = true
-        @mixins[key][:css] = nil
       else
         @mixins[key][:has_params] = false
-        @mixins[key][:css] = get_mixin_css(node)
       end
 
       @mixins
@@ -217,26 +146,6 @@ module RogerStyleGuide::Sass
       @variables[key][:used] = 0 unless @variables[key].key?(:used)
       @variables[key].update(get_value(value))
       @variables
-    end
-
-    def get_mixin_css(node)
-      prefix = @environment.options[:mixin_class_prefix]
-
-      # Generate a fictious rule
-      rule = Sass::Tree::RuleNode.new([".#{prefix}-#{node.name}"])
-      rule.children << Sass::Tree::MixinNode.new(
-        node.name, [], Sass::Util::NormalizedMap.new({}), nil, nil
-      )
-      rule.options = node.options
-
-      # Visit rule so we can actually generate css afterwards
-      visit_rule(rule)
-
-      # visit_rule will trigger a "use" as well
-      # so we compensate for that
-      @mixins[node.name][:used] -= 1
-
-      rule.css
     end
 
     # rubocop:disable Metrics/MethodLength

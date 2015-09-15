@@ -1,6 +1,8 @@
 require "sass"
 require File.dirname(__FILE__) + "/color_visitor"
 require File.dirname(__FILE__) + "/info_visitor"
+require File.dirname(__FILE__) + "/css/font_css_generator"
+require File.dirname(__FILE__) + "/css/mixin_css_generator"
 
 module RogerStyleGuide::Sass
   # SassInfo extracts all kind of info from a Sass file
@@ -192,53 +194,64 @@ module RogerStyleGuide::Sass
 
       # VarVisitor is a subclass of the perform visitor so
       # this does most of the SASS heavy lifting
-      @var_visitor = InfoVisitor.new(env)
-      tree = @var_visitor.visit(tree)
+      var_visitor = InfoVisitor.new(env)
+      tree = var_visitor.visit(tree)
 
       Sass::Tree::Visitors::CheckNesting.visit(tree) # Check again to validate mixins
       tree, extends = Sass::Tree::Visitors::Cssize.visit(tree)
       Sass::Tree::Visitors::Extend.visit(tree, extends)
 
-      @color_visitor = ColorVisitor.new
-      @color_visitor.visit(tree)
+      color_visitor = ColorVisitor.new
+      color_visitor.visit(tree)
 
-      store_parsed_data
+      store_parsed_data(var_visitor, color_visitor)
 
       @_parsed = true
       nil
     end
 
-    def store_parsed_data
+    def add_font_css(fonts, environment)
+      generator = Css::FontCssGenerator.new(
+        environment,
+        document_root_path: @options[:document_root_path]
+      )
+      generator.generate(fonts)
+    end
+
+    def add_mixin_css(mixins, environment)
+      generator = Css::MixinCssGenerator.new(environment, @options[:mixin_class_prefix])
+      generator.generate(mixins)
+    end
+
+    def store_parsed_data(var_visitor, color_visitor)
       # Store the variables
       @variables = categorize(
-        @var_visitor.variables,
+        var_visitor.variables,
         @options[:variable_category_matchers]
       )
 
       @mixins = categorize(
-        @var_visitor.mixins,
+        var_visitor.mixins,
         @options[:variable_category_matchers]
       )
+      @mixins = add_mixin_css(@mixins, var_visitor.root_env)
 
-      @fonts = @var_visitor.fonts
+      @fonts = add_font_css(var_visitor.fonts, var_visitor.root_env)
 
       # Store the colors
-      @colors = @color_visitor.colors
+      @colors = color_visitor.colors
     end
 
     def sass_engine
       if @options[:source]
         Sass::Engine.new(
           @options[:source],
-          syntax: :scss,
-          document_root_path: @options[:document_root_path],
-          mixin_class_prefix: @options[:mixin_class_prefix]
+          syntax: :scss
         )
       else
         Sass::Engine.for_file(
           @path.to_s,
-          document_root_path: @options[:document_root_path],
-          mixin_class_prefix: @options[:mixin_class_prefix]
+          {}
         )
       end
     end
