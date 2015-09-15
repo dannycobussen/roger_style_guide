@@ -1,12 +1,13 @@
 require "sass"
 require File.dirname(__FILE__) + "/color_visitor"
-require File.dirname(__FILE__) + "/var_visitor"
+require File.dirname(__FILE__) + "/info_visitor"
 
 module RogerStyleGuide::Sass
   # SassInfo extracts all kind of info from a Sass file
   #
   # -  `styleinfo.colors` : A list of all used colors in the output CSS
   # -  `styleinfo.variables` : A list of variables filterable
+  # -  `styleinfo.mixins` : A list of mixins filterable
   # -  `styleinfo.fonts` : A list of fonts
   class Info
     attr_reader :path, :environment
@@ -20,6 +21,8 @@ module RogerStyleGuide::Sass
     #
     # @option options [Hash] :variable_category_matchers Category matchers. Modify these
     #   to match your variable category scheme
+    # @option options [Hash] :mixin_category_matchers Category matchers. Modify these
+    #   to match your mixin category scheme
     # @option options [String, Pathname] :document_root_path The root_path of the webserver
     #   This path will be used to rewrite URL's if needed.
     # @option options [String] :mixin_class_prefix The prefix to use when generating mixin classes
@@ -189,7 +192,7 @@ module RogerStyleGuide::Sass
 
       # VarVisitor is a subclass of the perform visitor so
       # this does most of the SASS heavy lifting
-      @var_visitor = VarVisitor.new(env)
+      @var_visitor = InfoVisitor.new(env)
       tree = @var_visitor.visit(tree)
 
       Sass::Tree::Visitors::CheckNesting.visit(tree) # Check again to validate mixins

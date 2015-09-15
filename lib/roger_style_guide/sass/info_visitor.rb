@@ -1,21 +1,14 @@
 require "pathname"
 
 module RogerStyleGuide::Sass
-  # VarVisitor
+  # InfoVisitor
   #
-  # The VarVisitor finds all variables for you and returns them
-  # in the following format:
+  # The InfoVistor finds info on:
   #
-  # @return [Hash] A hash with variables in the following format
-  #     {
-  #       "VARIABLE_NAME" => { # The variable name
-  #         type: nil/:color  # A symbol representing the type (nil for value based inferable type)
-  #         value: "value"/0/{}/[] # The value, if it's a map or list it will just nest
-  #         unit: "px"/"em"/etc. # The unit
-  #         used: 0 # How many times it's used (only at top level, not within nesting)
-  #       }
-  #     }
-  class VarVisitor < Sass::Tree::Visitors::Perform
+  # - Variables
+  # - Mixins
+  # - Fonts
+  class InfoVisitor < Sass::Tree::Visitors::Perform
     public :visit, :with_environment
 
     attr_reader :variables, :mixins, :fonts, :root_env
