@@ -43,6 +43,12 @@ The base `components` path can be configured by setting `RogerStyleGuide.compone
 ### Toc
 The `toc` function is used to display table of contents of your Roger mockup. It's pretty simple: `toc(PATH_TO BUILD TOC FROM)`. See `toc_helper.rb` file for more info on options and lower level function.
 
+## Mustache
+Roger Styleguide adds support for Mustache templates including support for components as Mustache partials.
+
+Rendering mustache templates is just as easy as doing `<%= component("bla") %>` which will render `components/bla/bla.mst` if it exists. If you also have
+regular partials you can force using the mustache template by doing `<%= component("bla.mst") %>`.
+
 ## Installation
 
 Add this line to your application's Gemfile:

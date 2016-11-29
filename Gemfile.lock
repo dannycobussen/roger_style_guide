@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     roger_style_guide (0.0.0)
+      mustache (~> 0.99, >= 0.99.8)
       roger (~> 1.0, >= 1.7.0)
 
 GEM
@@ -21,6 +22,7 @@ GEM
     mime-types (2.99.3)
     mocha (1.1.0)
       metaclass (~> 0.0.1)
+    mustache (0.99.8)
     parser (2.3.3.0)
       ast (~> 2.2)
     power_assert (0.4.1)
