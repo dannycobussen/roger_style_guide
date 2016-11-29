@@ -40,6 +40,9 @@ You can call `component('my_component', a: "b")` which will render the partial `
 
 The base `components` path can be configured by setting `RogerStyleGuide.components_path` to a path within the HTML directory.
 
+### Toc
+The `toc` function is used to display table of contents of your Roger mockup. It's pretty simple: `toc(PATH_TO BUILD TOC FROM)`. See `toc_helper.rb` file for more info on options and lower level function.
+
 ## Installation
 
 Add this line to your application's Gemfile:
