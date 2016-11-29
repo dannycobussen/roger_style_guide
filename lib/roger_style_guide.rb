@@ -12,5 +12,8 @@ module RogerStyleGuide
   end
 end
 
+# Helpers
+require File.dirname(__FILE__) + "/roger_style_guide/helpers"
+
 # Generators
 require File.dirname(__FILE__) + "/roger_style_guide/generators"

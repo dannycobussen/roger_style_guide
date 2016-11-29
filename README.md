@@ -23,6 +23,23 @@ Options for the command are:
 * `--js` : Will generate a `NAME.js` file too
 * `--extension=EXT` : Will generate a `_NAME.EXT` instead of `_NAME.html.erb`
 
+#### Helper
+The `component` function is simplification of the `partial` function. Taking this directory structure:
+
+```
+html
+  |- components
+     |- my_component
+     |  |- _my_component.html.erb
+     |- other_component
+        |- _other_component.html.erb
+        |- _other_component_variant.html.erb
+```
+
+You can call `component('my_component', a: "b")` which will render the partial `components/my_component/_my_component.html.erb` with locals `{a: "b"}`. If you want to render another componentpartial you can also call `component('other_component/other_component_variant')`.
+
+The base `components` path can be configured by setting `RogerStyleGuide.components_path` to a path within the HTML directory.
+
 ## Installation
 
 Add this line to your application's Gemfile:
