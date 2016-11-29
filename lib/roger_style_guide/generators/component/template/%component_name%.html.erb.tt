@@ -1,0 +1,5 @@
+---
+title: <%= component_name %>
+---
+
+<%%= component("<%= component_name %>") %>

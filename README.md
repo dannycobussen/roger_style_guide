@@ -2,6 +2,27 @@
 
 Helpers to create styleguides.
 
+## What's in it?
+
+### Components
+
+### Generator
+Quick & easy component generation:
+
+`roger generate component NAME`
+
+will generate this structure in your components path:
+```
+NAME.html.erb
+_NAME.html.erb
+_NAME.scss
+```
+
+Options for the command are:
+
+* `--js` : Will generate a `NAME.js` file too
+* `--extension=EXT` : Will generate a `_NAME.EXT` instead of `_NAME.html.erb`
+
 ## Installation
 
 Add this line to your application's Gemfile:
