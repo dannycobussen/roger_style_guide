@@ -4,8 +4,14 @@ module RogerStyleGuide::Templates::Mustache
   # Mustach template wrapper which handles partial
   # resolving.
   class MustacheTemplate < ::Mustache
+    attr_reader :template_context
+
     def render(template, data, template_context = nil)
-      @template_context = template_context
+      if template_context
+        @template_context = template_context
+      elsif data.respond_to?(:template_context)
+        @template_context = data.template_context
+      end
       super(template, data)
     end
 
