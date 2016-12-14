@@ -11,17 +11,20 @@ Quick & easy component generation:
 
 `roger generate component NAME`
 
-will generate this structure in your components path:
+will generate this structure in your components path by default:
 ```
 NAME.html.erb
 _NAME.html.erb
 _NAME.scss
 ```
 
+If you have a `PROJECT_PATH/lib/component_template` directory it will use that. This makes it easier to use custom templates.
+
 Options for the command are:
 
 * `--js` : Will generate a `NAME.js` file too
 * `--extension=EXT` : Will generate a `_NAME.EXT` instead of `_NAME.html.erb`
+* `--template_path=PATH` : The directory to use as template (uses `roger.project.path/lib/component_template` as default and if that doesn't exist it will use the internal template).
 
 #### Helper
 The `component` function is simplification of the `partial` function. Taking this directory structure:

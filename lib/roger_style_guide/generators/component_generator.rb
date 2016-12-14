@@ -12,6 +12,12 @@ module RogerStyleGuide::Generators
     )
 
     class_option(
+      :template_path,
+      type: :string,
+      desc: "Template path, default: roger.project.path/lib/component_template"
+    )
+
+    class_option(
       :js,
       type: :boolean,
       desc: "Wether or not to generate a component js file",
@@ -25,7 +31,15 @@ module RogerStyleGuide::Generators
       default: "html.erb")
 
     def self.source_root
-      File.dirname(__FILE__) + "/component/template"
+
+    end
+
+    def source_paths
+      if options[:template_path]
+        [options[:template_path]]
+      else
+        [project_template_path, File.dirname(__FILE__) + "/component/template"]
+      end
     end
 
     def do
@@ -49,6 +63,11 @@ module RogerStyleGuide::Generators
       options[:components_path] && Pathname.new(options[:components_path]) ||
         Roger::Cli::Base.project &&
           Roger::Cli::Base.project.html_path + RogerStyleGuide.components_path
+    end
+
+    def project_template_path
+      Roger::Cli::Base.project &&
+        Roger::Cli::Base.project.path + "lib/component_template"
     end
   end
 end
