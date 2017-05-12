@@ -75,7 +75,7 @@ module RogerStyleGuide::Helpers::TocHelper
     # Don't go deeper if we reached max_depth
     return if level >= max_depth
 
-    path.entries.each do |entry|
+    path.entries.sort.each do |entry|
       entry_path = path + entry
 
       # Normalize paths, removing all "." and "_" files
