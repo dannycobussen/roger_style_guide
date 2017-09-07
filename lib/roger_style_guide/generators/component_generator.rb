@@ -1,3 +1,5 @@
+require "roger/cli/generate"
+require "roger/cli/command"
 require "roger/generators"
 
 module RogerStyleGuide::Generators
