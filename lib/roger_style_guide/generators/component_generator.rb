@@ -1,3 +1,5 @@
+require "roger/generators"
+
 module RogerStyleGuide::Generators
   # The component generator
   class ComponentGenerator < Roger::Generators::Base
