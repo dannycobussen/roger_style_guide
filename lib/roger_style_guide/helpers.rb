@@ -1,3 +1,5 @@
+require "roger/renderer"
+
 # All helpers related namespace
 module RogerStyleGuide::Helpers
 end
